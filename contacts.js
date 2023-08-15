@@ -1,57 +1,43 @@
-import fs from 'fs/promises'
-import path from 'path'
-import {nanoid} from "nanoid";
+const fs = require("fs/promises");
+const path = require("path");
+const { nanoid } = require("nanoid");
 
-const contactsPath = path.resolve("db", "contacts.json")
+const contactsPath = path.join(__dirname, "db/contacts.json");
 
-const updateContactsStorage = contact => fs.writeFile(contactsPath, JSON.stringify(contact, null, 2));
+async function listContacts() {
+  const data = await fs.readFile(contactsPath);
+  return JSON.parse(data);
+}
 
-const listContacts = async () => {
-    // ...твій код. Повертає масив контактів.
-    const data = await fs.readFile(contactsPath)
-    return JSON.parse(data)
-  }
-  
-const getContactById = async (contactId) => {
-    // ...твій код. Повертає об'єкт контакту з таким id. Повертає null, якщо контакт з таким id не знайдений.
-    const contacts = await listContacts()
-    const result = contacts.filter(contact => contact.id === contactId )
-    return result
-  }
-  
-const removeContact = async (contactId) => {
-    // ...твій код. Повертає об'єкт видаленого контакту. Повертає null, якщо контакт з таким id не знайдений.
+async function getContactById(contactId) {
+  const contacts = await listContacts();
+  const oneContact = contacts.find((contact) => contact.id === contactId);
+  return oneContact || null;
+}
 
-    const contacts = await listContacts()
-    const result = contacts.find( contact => contact.id === contactId ) 
-    const newArray = contacts.filter( contact => contact.id !== contactId ) 
+async function removeContact(contactId) {
+    const contacts = await listContacts();
+    const index = contacts.findIndex(contact => contact.id === contactId);
+    if (index === -1) {
+        return null
+    }
+    const [deleteContact] = contacts.splice(index, 1)
+    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+    return deleteContact;
+ }
 
-    await updateContactsStorage(newArray)
-    return result
-  }
+async function addContact(name, email, phone) {
+    const contacts = await listContacts();
+    const newContact = { id: nanoid(), name, email, phone };
 
-    const addContact = async (name, email, phone) => {
-    // ...твій код. Повертає об'єкт доданого контакту.
+    contacts.push(newContact);
+    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2))
+    return newContact;
+}
 
-    const newArray = await listContacts()
-    const newContact = {
-        id:nanoid(),
-        name,
-        email,
-        phone,
-    };
-
-    newArray.push(newContact)
-
-    await updateContactsStorage(newArray)
-    return newContact
-  }
-
-const todoActions = {
+module.exports = {
   listContacts,
   getContactById,
   removeContact,
   addContact,
-}
-
-export default todoActions
+};
