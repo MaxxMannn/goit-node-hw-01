@@ -1,6 +1,7 @@
 {
-  "name": "hw-01",
+  "name": "goit-node-hw-01",
   "version": "1.0.0",
+  "homepage": "https://maxxmann.github.io/goit-node-hw-01/",
   "description": "",
   "main": "index.js",
   "scripts": {
